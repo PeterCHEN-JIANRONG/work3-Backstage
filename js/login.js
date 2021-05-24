@@ -12,9 +12,6 @@ const app = {
         }
     },
     methods: {
-        init() {
-            this.checkLoginStatus();
-        },
         doLogin() {
             axios.post(`${this.apiBaseUrl}/admin/signin`, this.user)
                 .then(res => {
@@ -24,7 +21,7 @@ const app = {
                         const { token, expired } = res.data;
                         // set cookie, expired設置有效時間
                         document.cookie = `hexToken=${token}; expires=${new Date(expired)}`;
-                        // window.location = "index.html";
+                        window.location = "index.html";
                     } else {
                         alert(`${res.data.message}，請確認帳號、密碼是否輸入正確`);
                         this.user.username = "";
@@ -54,7 +51,7 @@ const app = {
         }
     },
     created() {
-        this.init();
+        this.checkLoginStatus();
     },
 }
 
