@@ -1,9 +1,17 @@
+//  新增、刪除視窗 Model
+let productModel = null;
+
+
 const app = {
     data() {
         return {
             apiPath: api_path,
             apiBaseUrl: api_base_url,
             products: [],
+            isAdd: false,
+            tempProduct: {
+                imagesUrl: []
+            }
         }
     },
     methods: {
@@ -17,7 +25,7 @@ const app = {
             }
             axios.defaults.headers.common['Authorization'] = token;
         },
-        getData() {
+        getProducts() {
             axios.get(`${this.apiBaseUrl}/api/${this.apiPath}/admin/products?page=:page`)
                 .then(res => {
                     console.log(res.data);
@@ -36,11 +44,57 @@ const app = {
                     if (res.data.success) {
                         const product = this.products.find(item => item.id === productId);
                         alert(`${res.data.message}，產品名稱：${product.title}`);
-                        this.getData();
+                        this.getProducts();
                     } else {
                         alert(res.data.message);
                     }
                 })
+        },
+        updateData() {
+            // 新增 method
+            let url = `${this.apiBaseUrl}/api/${this.apiPath}/admin/product`;
+            let method = 'post';
+            // 修改 method
+            if (!this.isAdd) {
+                url = `${this.apiBaseUrl}/api/${this.apiPath}/admin/product/${this.tempProduct.id}`
+                method = 'put';
+            }
+            axios[method](url, { data: this.tempProduct })
+                .then(res => {
+                    if (res.data.success) {
+                        alert(res.data.message)
+                        productModal.hide();
+                        this.getProducts();
+                    } else {
+                        alert(res.data.message);
+                    }
+                })
+        },
+        openModal(option, item) {
+            switch (option) {
+                case 'add':
+                    this.isAdd = true;
+                    this.tempProduct = {
+                        imagesUrl: []
+                    }
+                    productModal.show();
+                    break;
+                case 'edit':
+                    this.isAdd = false;
+                    // this.tempProduct = { ...item };
+                    this.tempProduct = JSON.parse(JSON.stringify(item));
+                    productModal.show();
+                    break;
+                case 'delete':
+                    console.log("delete");
+                    console.log(item);
+                    break;
+            }
+
+        },
+        createImages() {
+            this.tempProduct.imagesUrl = [];
+            this.tempProduct.imagesUrl.push('');
         },
         toThousand(num) {
             let temp = num.toString().split(".");
@@ -52,7 +106,12 @@ const app = {
         // setting axios header token
         this.getLoginToken();
         // get products
-        this.getData();
+        this.getProducts();
+    },
+    mounted() {
+        productModal = new bootstrap.Modal(document.querySelector('#productModal'), {
+            keyboard: false
+        });
     },
 }
 
