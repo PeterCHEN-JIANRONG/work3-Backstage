@@ -96,6 +96,7 @@ const app = {
 
         },
         createImages() {
+            // 將imagesUrl 賦予空陣列，並塞空字串，好讓v-for渲染
             this.tempProduct.imagesUrl = [];
             this.tempProduct.imagesUrl.push('');
         },
