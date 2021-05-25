@@ -1,7 +1,6 @@
 //  新增、刪除視窗 Model
 let productModel = null;
 
-
 const app = {
     data() {
         return {
@@ -16,7 +15,7 @@ const app = {
     },
     methods: {
         getLoginToken() {
-            // get token, add token to headers
+            // get token from cookie, set axios default headers
             const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
             if (!token) {
                 alert("尚未登入");
@@ -25,10 +24,10 @@ const app = {
             }
             axios.defaults.headers.common['Authorization'] = token;
         },
-        getProducts() {
-            axios.get(`${this.apiBaseUrl}/api/${this.apiPath}/admin/products?page=:page`)
+        getProducts(page = 1) {
+            const url = `${this.apiBaseUrl}/api/${this.apiPath}/admin/products?page=${page}`;
+            axios.get(url)
                 .then(res => {
-                    console.log(res.data);
                     if (res.data.success) {
                         this.products = res.data.products;
                     } else {
@@ -36,6 +35,9 @@ const app = {
                         window.location = "login.html";
                         return
                     }
+                })
+                .catch(err => {
+                    console.dir(err);
                 })
         },
         deleteData(productId) {
@@ -51,7 +53,7 @@ const app = {
                 })
         },
         updateData() {
-            // 新增 method
+            // default: 新增 method
             let url = `${this.apiBaseUrl}/api/${this.apiPath}/admin/product`;
             let method = 'post';
             // 修改 method
@@ -71,17 +73,18 @@ const app = {
                 })
         },
         openModal(option, item) {
+            // add & edit modal、delete modal
             switch (option) {
                 case 'add':
-                    this.isAdd = true;
+                    this.isAdd = true; //新增add
                     this.tempProduct = {
                         imagesUrl: []
                     }
                     productModal.show();
                     break;
                 case 'edit':
-                    this.isAdd = false;
-                    // this.tempProduct = { ...item };
+                    this.isAdd = false; //修改edit
+                    // this.tempProduct = { ...item };  //因為tempProduct.imagesUrl可能會有傳參考問題, 改用深拷貝
                     this.tempProduct = JSON.parse(JSON.stringify(item));
                     productModal.show();
                     break;
@@ -97,6 +100,7 @@ const app = {
             this.tempProduct.imagesUrl.push('');
         },
         toThousand(num) {
+            // 千分位
             let temp = num.toString().split(".");
             temp[0] = temp[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             return temp.join(".");
