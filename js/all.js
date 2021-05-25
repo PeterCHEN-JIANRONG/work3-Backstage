@@ -1,5 +1,6 @@
 //  新增、刪除視窗 Model
 let productModel = null;
+let delProductModal = null;
 
 const app = {
     data() {
@@ -40,19 +41,24 @@ const app = {
                     console.dir(err);
                 })
         },
-        deleteData(productId) {
-            axios.delete(`${this.apiBaseUrl}/api/${this.apiPath}/admin/product/${productId}`)
+        deleteProduct() {
+            const url = `${this.apiBaseUrl}/api/${this.apiPath}/admin/product/${this.tempProduct.id}`;
+            axios.delete(url)
                 .then(res => {
                     if (res.data.success) {
-                        const product = this.products.find(item => item.id === productId);
-                        alert(`${res.data.message}，產品名稱：${product.title}`);
+                        // const product = this.products.find(item => item.id === productId);
+                        alert(res.data.message);
                         this.getProducts();
+                        delProductModal.hide();
                     } else {
                         alert(res.data.message);
                     }
                 })
+                .catch(err => {
+                    console.dir(err);
+                })
         },
-        updateData() {
+        updateProduct() {
             // default: 新增 method
             let url = `${this.apiBaseUrl}/api/${this.apiPath}/admin/product`;
             let method = 'post';
@@ -71,6 +77,9 @@ const app = {
                         alert(res.data.message);
                     }
                 })
+                .catch(err => {
+                    console.dir(err);
+                })
         },
         openModal(option, item) {
             // add & edit modal、delete modal
@@ -84,19 +93,18 @@ const app = {
                     break;
                 case 'edit':
                     this.isAdd = false; //修改edit
-                    // this.tempProduct = { ...item };  //因為tempProduct.imagesUrl可能會有傳參考問題, 改用深拷貝
-                    this.tempProduct = JSON.parse(JSON.stringify(item));
+                    this.tempProduct = JSON.parse(JSON.stringify(item)); //因為tempProduct.imagesUrl可能會有傳參考問題, 改用深拷貝
                     productModal.show();
                     break;
                 case 'delete':
-                    console.log("delete");
-                    console.log(item);
+                    this.tempProduct = { ...item };
+                    delProductModal.show();
                     break;
             }
 
         },
         createImages() {
-            // 將imagesUrl 賦予空陣列，並塞空字串，好讓v-for渲染
+            // 將imagesUrl 賦予空陣列，並塞空字串，好讓v-for渲染 url-input、和顯示刪除Btn
             this.tempProduct.imagesUrl = [];
             this.tempProduct.imagesUrl.push('');
         },
@@ -107,16 +115,19 @@ const app = {
             return temp.join(".");
         },
     },
-    created() {
+    mounted() {
+        // !! Modal必須在mounted建立，建立在created會有畫面渲染不到資料的問題
+        productModal = new bootstrap.Modal(document.querySelector('#productModal'), {
+            keyboard: false
+        });
+        delProductModal = new bootstrap.Modal(document.querySelector('#delProductModal'), {
+            keyboard: false
+        })
+
         // setting axios header token
         this.getLoginToken();
         // get products
         this.getProducts();
-    },
-    mounted() {
-        productModal = new bootstrap.Modal(document.querySelector('#productModal'), {
-            keyboard: false
-        });
     },
 }
 
